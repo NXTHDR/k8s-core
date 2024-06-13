@@ -1,0 +1,20 @@
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  calicoNetwork:
+    ipPools:
+    - blockSize: 122
+      cidr: 2a06:de00:50:1::/112
+      encapsulation: None
+      natOutgoing: Disabled
+      nodeSelector: all()
+    nodeAddressAutodetectionV6:
+      kubernetes: NodeInternalIP
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  name: default
+spec: {}

@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd
+  namespace: dns-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: etcd
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: etcd
+    spec:
+      containers:
+      - name: etcd
+        image: bitnami/etcd:latest
+        ports:
+        - containerPort: 2379
+        env:
+        - name: ETCD_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: etcd-credentials
+              key: etcd-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+  namespace: dns-system
+  labels:
+    k8s-app: etcd
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: ETCD
+spec:
+  selector:
+    k8s-app: etcd
+  type: ClusterIP
+  clusterIP: 2a06:de00:50:1:ff00::11
+  ports:
+  - port: 2379
+    protocol: TCP

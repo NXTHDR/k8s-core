@@ -1,0 +1,9 @@
+apiVersion: projectcalico.org/v3
+kind: GlobalNetworkPolicy
+metadata:
+  name: default-deny
+spec:
+  selector: projectcalico.org/namespace not in  {'kube-system', 'calico-system', 'calico-apiserver', 'tigera-operator', 'dns-system', 'metallb-system', 'cert-manager'}
+  types:
+  - Ingress
+  - Egress

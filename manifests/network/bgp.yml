@@ -1,0 +1,18 @@
+apiVersion: projectcalico.org/v3
+kind: BGPConfiguration
+metadata:
+  name: default
+spec:
+  asNumber: 215011
+  serviceClusterIPs:
+    - cidr: 2a06:de00:50:1:ff00::/112
+  serviceLoadBalancerIPs:
+    - cidr: 2a06:de00:50:1:ff01::/112
+---
+apiVersion: projectcalico.org/v3
+kind: BGPPeer
+metadata:
+  name: ixp
+spec:
+  peerIP: 2a06:de00:50:ffff:ffff::192
+  asNumber: 215011
