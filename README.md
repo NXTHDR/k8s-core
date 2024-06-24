@@ -33,6 +33,13 @@ $ kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27
 $ kubectl apply -f manifests/network/
 ```
 
+4. Enable metrics reporting
+
+```sh
+$ kubectl patch felixconfiguration default --type merge --patch '{"spec":{"prometheusMetricsEnabled": true}}'
+$ kubectl patch installation default --type=merge -p '{"spec": {"typhaMetricsPort":9093}}'
+```
+
 ## DNS 
 
 1. Etcd credentials secret 
@@ -101,4 +108,10 @@ See our Cert-Manager dns01 [webhook](https://github.com/NXTHDR/cert-manager-webh
         -n cert-manager \
         --set groupName='acme.nextheader.dev' \
         deploy/webhook-coredns/
+```
+
+## Uninstall k3s 
+
+```sh 
+/usr/local/bin/k3s-uninstall.sh
 ```

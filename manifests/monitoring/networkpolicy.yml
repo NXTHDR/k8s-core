@@ -1,0 +1,18 @@
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: prometheus-policy
+  namespace: monitoring-system
+spec:
+  selector: run == 'prometheus'
+  types:
+  - Ingress
+  - Egress
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports:
+        - 443
+  egress:
+  - action: Allow

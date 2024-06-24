@@ -6,12 +6,12 @@ metadata:
 spec:
   selector:
     matchLabels:
-      k8s-app: etcd
+      run: etcd
   replicas: 1
   template:
     metadata:
       labels:
-        k8s-app: etcd
+        run: etcd
     spec:
       containers:
       - name: etcd
@@ -30,13 +30,9 @@ kind: Service
 metadata:
   name: etcd
   namespace: dns-system
-  labels:
-    k8s-app: etcd
-    kubernetes.io/cluster-service: "true"
-    kubernetes.io/name: ETCD
 spec:
   selector:
-    k8s-app: etcd
+    run: etcd
   type: ClusterIP
   clusterIP: 2a06:de00:50:1:ff00::11
   ports:

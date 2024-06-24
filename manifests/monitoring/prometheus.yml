@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: prometheus
+  template:
+    metadata:
+      labels:
+        run: prometheus
+    spec:
+      serviceAccountName: calico-prometheus-user
+      containers:
+        - name: prometheus
+          image: prom/prometheus
+          args:
+            - --config.file=/etc/prometheus/prometheus.yml
+            - --web.config.file=/etc/prometheus/web-config.yml
+            - --web.listen-address=:443
+            - --web.external-url=https://prometheus.nextheader.dev
+            - --log.level=debug
+          ports:
+            - containerPort: 443
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus/
+            - name: prometheus-storage-volume
+              mountPath: /prometheus/
+            - name: prometheus-cert
+              readOnly: true
+              mountPath: /etc/ssl/nginx/
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            defaultMode: 420
+            name: prometheus-config
+        - name: prometheus-cert
+          secret:
+            secretName: acme-cert
+        - name: prometheus-storage-volume
+          emptyDir: {}
+        
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: acme-cert
+  namespace: monitoring-system
+spec:
+  secretName: acme-cert
+  dnsNames:
+    - prometheus.nextheader.dev
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: nextheader-acme
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: monitoring-system
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: prometheus.nextheader.dev
+    external-dns.alpha.kubernetes.io/ttl: "120"
+spec:
+  selector:
+    run: prometheus
+  type: LoadBalancer
+  ports:
+  - port: 443
+    protocol: TCP
