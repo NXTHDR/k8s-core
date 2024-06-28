@@ -110,6 +110,28 @@ See our Cert-Manager dns01 [webhook](https://github.com/NXTHDR/cert-manager-webh
         deploy/webhook-coredns/
 ```
 
+## Monitoring
+
+1. Namespace
+
+```sh
+$ kubectl apply -f manifests/monitoring/ns.yml
+```
+
+2. Grafana admin secret (change it!)
+
+```sh 
+kubectl create secret generic grafana -n monitoring-system \
+    --from-literal=grafana-admin-password=admin \
+    --from-literal=grafana-admin-user=admin
+```
+
+3. Monitoring stack
+
+```sh
+$ kubectl apply -f manifests/monitoring/
+```
+
 ## Uninstall k3s 
 
 ```sh 

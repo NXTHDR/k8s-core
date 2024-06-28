@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: grafana
+  template:
+    metadata:
+      labels:
+        run: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana
+                  key: grafana-admin-user
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana
+                  key: grafana-admin-password
+          ports:
+            - containerPort: 443
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/grafana
+            - name: dashboards-volume
+              mountPath: /var/lib/grafana/dashboards
+            - name: dashboard-provider
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: datasources-provider
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: grafana-cert
+              readOnly: true
+              mountPath: /etc/ssl/nginx/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: grafana-config
+        - name: dashboards-volume
+          configMap:
+            name: grafana-dashsboards
+        - name: dashboard-provider
+          configMap:
+            name: grafana-dash-provider
+            items:
+              - key: providers.yaml
+                path: providers.yaml
+        - name: datasources-provider
+          configMap:
+            name: grafana-datasources-provider
+            items:
+              - key: providers.yaml
+                path: providers.yaml
+        - name: grafana-cert
+          secret:
+            secretName: acme-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: acme-cert
+  namespace: monitoring-system
+spec:
+  secretName: acme-cert
+  dnsNames:
+    - grafana.nextheader.dev
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: nextheader-acme
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring-system
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: grafana.nextheader.dev
+    external-dns.alpha.kubernetes.io/ttl: "120"
+spec:
+  selector:
+    run: grafana
+  type: LoadBalancer
+  ports:
+  - port: 443
+    protocol: TCP
+---
+apiVersion: projectcalico.org/v3
+kind: NetworkPolicy
+metadata:
+  name: grafana-policy
+  namespace: monitoring-system
+spec:
+  selector: run == 'grafana'
+  types:
+  - Ingress
+  - Egress
+  ingress:
+  - action: Allow
+    protocol: TCP
+    destination:
+      ports:
+        - 443
+  egress:
+  - action: Allow
