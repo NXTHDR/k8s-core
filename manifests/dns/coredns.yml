@@ -141,6 +141,8 @@ spec:
             path: db.nextheader.dev
           - key: db.as215011.net
             path: db.as215011.net
+          - key: db.randomlogs.com
+            path: db.randomlogs.com
 ---
 apiVersion: v1
 kind: Service

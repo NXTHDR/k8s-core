@@ -89,6 +89,36 @@ data:
       file /etc/coredns/db.as215011.net
    }
 
+   randomlogs.com:53 {
+      log
+      errors
+      view etcd {
+        expr type() in ['A', 'AAAA', 'TXT']
+      }
+      etcd {
+        endpoint http://[2a06:de00:50:1:ff00::11]:2379
+        path /skydns
+        credentials {$ETCD_USERNAME} {$ETCD_PASSWORD}
+        fallthrough
+      }
+      forward . [::1]:5353
+   }
+
+   randomlogs.com:53 {
+      log
+      errors
+      view etcd {
+        expr type() not in ['A', 'AAAA', 'TXT']
+      }
+      forward . [::1]:5353
+   }
+
+   randomlogs.com:5353 {
+      log
+      errors
+      file /etc/coredns/db.randomlogs.com
+   }
+
   db.nextheader.dev: |
    nextheader.dev.              IN    SOA   ns0.nextheader.dev. ns1.nextheader.dev. (
             2003080800 ; sn = serial number
@@ -110,10 +140,15 @@ data:
             1209600    ; ex = expiry = 2w
             3600       ; nx = nxdomain ttl = 1h
             )
-   @                            IN          NS          ns0.as215011.net.
-   @                            IN          NS          ns1.as215011.net.
-   ns0.as215011.net.            IN          AAAA        2a06:de00:50:1:ff00::10
-   ns1.as215011.net.            IN          AAAA        2a06:de00:50:1:ff00::10
+
+  db.randomlogs.com: |
+   randomlogs.com.              IN    SOA   ns0.randomlogs.com. ns1.randomlogs.com. (
+            2003080800 ; sn = serial number
+            172800     ; ref = refresh = 2d
+            900        ; ret = update retry = 15m
+            1209600    ; ex = expiry = 2w
+            3600       ; nx = nxdomain ttl = 1h
+            )
 
   NodeHosts: |
    2a06:de00:50:ffff:ffff::191 core
