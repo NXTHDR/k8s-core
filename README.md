@@ -118,10 +118,10 @@ See our Cert-Manager dns01 [webhook](https://github.com/NXTHDR/cert-manager-webh
 $ kubectl apply -f manifests/monitoring/ns.yml
 ```
 
-2. Grafana admin secret (change it!)
+2. Grafana admin secret (CHANGE IT!)
 
 ```sh 
-kubectl create secret generic grafana -n monitoring-system \
+$ kubectl create secret generic grafana -n monitoring-system \
     --from-literal=grafana-admin-password=admin \
     --from-literal=grafana-admin-user=admin
 ```
@@ -130,6 +130,22 @@ kubectl create secret generic grafana -n monitoring-system \
 
 ```sh
 $ kubectl apply -f manifests/monitoring/
+```
+
+## Storage
+
+1. Postgres secret (CHANGE IT!)
+
+```sh
+$ kubectl create secret generic -n storage-system postgres-credentials \
+      --from-literal=POSTGRES_USER=admin \
+      --from-literal=POSTGRES_PASSWORD=admin
+```
+
+2. Storage stack
+
+```sh 
+$ kubectl apply -f manifests/storage/
 ```
 
 ## Uninstall k3s 
